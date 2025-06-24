@@ -1,7 +1,30 @@
-import type { DutchBetOpportunity } from '../types/DutchBetOpportunity';
+export interface OddsNode {
+  id: string;
+  eventId: string;
+  bookmaker: string;
+  market: {
+    rawName: string;
+    standardizedName: string;
+    marketGroup: string;
+  };
+  selection: {
+    rawName: string;
+    standardizedName: string;
+    type: string;
+  };
+  odds: number;
+  timestamp: number;
+}
 
-export const testData: DutchBetOpportunity[] = [
-  // your full test data array...
+export interface DutchBetOpportunity {
+  eventId: string;
+  market: string;
+  combinations: OddsNode[];
+  margin: number;
+  impliedProbability: number;
+}
+
+const sampleOpportunities: DutchBetOpportunity[] = [
   {
     eventId: "evt_001",
     market: "Match Winner",
@@ -16,14 +39,47 @@ export const testData: DutchBetOpportunity[] = [
           marketGroup: "Main Markets",
         },
         selection: {
-          rawName: "Gor Mahia vs AFC Leopards",
-          standardizedName: "Gor Mahia vs AFC Leopards",
+          rawName: "Gor Mahia",
+          standardizedName: "Gor Mahia",
           type: "team",
         },
         odds: 1.90,
         timestamp: Date.now() - 360000, // 6 mins ago
       },
-      // ... more combinations
+      {
+        id: "odds_002",
+        eventId: "evt_001",
+        bookmaker: "Betika",
+        market: {
+          rawName: "Match Result",
+          standardizedName: "Match Winner",
+          marketGroup: "Main Markets",
+        },
+        selection: {
+          rawName: "Draw",
+          standardizedName: "Draw",
+          type: "outcome",
+        },
+        odds: 3.25,
+        timestamp: Date.now() - 180000, // 3 mins ago
+      },
+      {
+        id: "odds_003",
+        eventId: "evt_001",
+        bookmaker: "22Bet",
+        market: {
+          rawName: "Full Time Result",
+          standardizedName: "Match Winner",
+          marketGroup: "Main Markets",
+        },
+        selection: {
+          rawName: "AFC Leopards",
+          standardizedName: "AFC Leopards",
+          type: "team",
+        },
+        odds: 4.10,
+        timestamp: Date.now() - 60000, // 1 min ago
+      },
     ],
     margin: 2.45,
     impliedProbability: 97.55,
@@ -49,7 +105,23 @@ export const testData: DutchBetOpportunity[] = [
         odds: 2.05,
         timestamp: Date.now() - 240000, // 4 mins ago
       },
-      // ... more combinations
+      {
+        id: "odds_005",
+        eventId: "evt_002",
+        bookmaker: "1xBet",
+        market: {
+          rawName: "Total Goals O/U",
+          standardizedName: "Total Goals",
+          marketGroup: "Goals Markets",
+        },
+        selection: {
+          rawName: "Under 2.5",
+          standardizedName: "Under 2.5 Goals",
+          type: "total",
+        },
+        odds: 1.85,
+        timestamp: Date.now() - 120000, // 2 mins ago
+      },
     ],
     margin: 1.89,
     impliedProbability: 98.11,
@@ -75,246 +147,187 @@ export const testData: DutchBetOpportunity[] = [
         odds: 1.78,
         timestamp: Date.now() - 300000, // 5 mins ago
       },
-      // ... more combinations
+      {
+        id: "odds_007",
+        eventId: "evt_003",
+        bookmaker: "Betika",
+        market: {
+          rawName: "Both Teams to Score",
+          standardizedName: "Both Teams to Score",
+          marketGroup: "Goals Markets",
+        },
+        selection: {
+          rawName: "No",
+          standardizedName: "Both Teams to Score - No",
+          type: "boolean",
+        },
+        odds: 2.15,
+        timestamp: Date.now() - 150000, // 2.5 mins ago
+      },
     ],
     margin: 2.67,
     impliedProbability: 97.33,
   },
   {
     eventId: "evt_004",
-    market: "Next Goal",
+    market: "First Half Result",
     combinations: [
       {
         id: "odds_008",
         eventId: "evt_004",
-        bookmaker: "Betway",
+        bookmaker: "22Bet",
         market: {
-          rawName: "Next Goal",
-          standardizedName: "Next Goal",
-          marketGroup: "Goals Markets",
+          rawName: "1st Half 1X2",
+          standardizedName: "First Half Result",
+          marketGroup: "Half Markets",
         },
         selection: {
-          rawName: "Gor Mahia",
-          standardizedName: "Gor Mahia vs AFC Leopards",
+          rawName: "Kenya Harlequins",
+          standardizedName: "Kenya Harlequins",
           type: "team",
         },
         odds: 2.20,
+        timestamp: Date.now() - 420000, // 7 mins ago
+      },
+      {
+        id: "odds_009",
+        eventId: "evt_004",
+        bookmaker: "Melbet",
+        market: {
+          rawName: "Half Time Result",
+          standardizedName: "First Half Result",
+          marketGroup: "Half Markets",
+        },
+        selection: {
+          rawName: "Draw",
+          standardizedName: "Draw",
+          type: "outcome",
+        },
+        odds: 2.80,
         timestamp: Date.now() - 180000, // 3 mins ago
       },
-      // ... more combinations
+      {
+        id: "odds_010",
+        eventId: "evt_004",
+        bookmaker: "1xBet",
+        market: {
+          rawName: "1st Half Result",
+          standardizedName: "First Half Result",
+          marketGroup: "Half Markets",
+        },
+        selection: {
+          rawName: "KCB Rugby",
+          standardizedName: "KCB Rugby",
+          type: "team",
+        },
+        odds: 3.50,
+        timestamp: Date.now() - 90000, // 1.5 mins ago
+      },
     ],
     margin: 3.12,
     impliedProbability: 96.88,
   },
   {
     eventId: "evt_005",
-    market: "Handicap",
+    market: "Point Spread",
     combinations: [
       {
-        id: "odds_010",
+        id: "odds_011",
         eventId: "evt_005",
-        bookmaker: "Betway",
+        bookmaker: "SportPesa",
         market: {
-          rawName: "Asian Handicap",
-          standardizedName: "Handicap",
-          marketGroup: "Handicap Markets",
+          rawName: "Handicap",
+          standardizedName: "Point Spread",
+          marketGroup: "Basketball Markets",
         },
         selection: {
-          rawName: "Gor Mahia +1",
-          standardizedName: "Gor Mahia +1 Goal",
+          rawName: "Nairobi Thunder +5.5",
+          standardizedName: "Nairobi Thunder +5.5",
           type: "handicap",
         },
-        odds: 1.85,
+        odds: 1.92,
+        timestamp: Date.now() - 360000, // 6 mins ago
+      },
+      {
+        id: "odds_012",
+        eventId: "evt_005",
+        bookmaker: "Betika",
+        market: {
+          rawName: "Point Handicap",
+          standardizedName: "Point Spread",
+          marketGroup: "Basketball Markets",
+        },
+        selection: {
+          rawName: "Ulinzi Warriors -5.5",
+          standardizedName: "Ulinzi Warriors -5.5",
+          type: "handicap",
+        },
+        odds: 1.98,
         timestamp: Date.now() - 120000, // 2 mins ago
       },
-      // ... more combinations
     ],
-    margin: 2.33,
-    impliedProbability: 97.67,
+    margin: 1.45,
+    impliedProbability: 98.55,
   },
   {
     eventId: "evt_006",
-    market: "First Half Winner",
-    combinations: [
-      {
-        id: "odds_012",
-        eventId: "evt_006",
-        bookmaker: "Melbet",
-        market: {
-          rawName: "First Half 1X2",
-          standardizedName: "First Half Winner",
-          marketGroup: "Half Markets",
-        },
-        selection: {
-          rawName: "Gor Mahia",
-          standardizedName: "Gor Mahia First Half Winner",
-          type: "team",
-        },
-        odds: 2.10,
-        timestamp: Date.now() - 60000, // 1 min ago
-      },
-      // ... more combinations
-    ],
-    margin: 1.75,
-    impliedProbability: 98.25,
-  },
-  {
-    eventId: "evt_007",
-    market: "Double Chance",
-    combinations: [
-      {
-        id: "odds_014",
-        eventId: "evt_007",
-        bookmaker: "SportPesa",
-        market: {
-          rawName: "Double Chance",
-          standardizedName: "Double Chance",
-          marketGroup: "Main Markets",
-        },
-        selection: {
-          rawName: "Gor Mahia or Draw",
-          standardizedName: "Gor Mahia or Draw",
-          type: "doubleChance",
-        },
-        odds: 1.65,
-        timestamp: Date.now() - 300000, // 5 mins ago
-      },
-      // ... more combinations
-    ],
-    margin: 2.50,
-    impliedProbability: 97.50,
-  },
-  {
-    eventId: "evt_008",
     market: "Correct Score",
     combinations: [
       {
-        id: "odds_016",
-        eventId: "evt_008",
-        bookmaker: "Betway",
+        id: "odds_013",
+        eventId: "evt_006",
+        bookmaker: "1xBet",
+        market: {
+          rawName: "Exact Score",
+          standardizedName: "Correct Score",
+          marketGroup: "Score Markets",
+        },
+        selection: {
+          rawName: "2-1",
+          standardizedName: "2-1",
+          type: "score",
+        },
+        odds: 8.50,
+        timestamp: Date.now() - 480000, // 8 mins ago
+      },
+      {
+        id: "odds_014",
+        eventId: "evt_006",
+        bookmaker: "Melbet",
         market: {
           rawName: "Correct Score",
           standardizedName: "Correct Score",
           marketGroup: "Score Markets",
         },
         selection: {
-          rawName: "1-0 Gor Mahia",
-          standardizedName: "1-0 Gor Mahia",
+          rawName: "1-1",
+          standardizedName: "1-1",
           type: "score",
         },
-        odds: 6.50,
-        timestamp: Date.now() - 120000, // 2 mins ago
-      },
-      // ... more combinations
-    ],
-    margin: 3.45,
-    impliedProbability: 96.55,
-  },
-  {
-    eventId: "evt_009",
-    market: "First Goal Scorer",
-    combinations: [
-      {
-        id: "odds_018",
-        eventId: "evt_009",
-        bookmaker: "Melbet",
-        market: {
-          rawName: "First Goal Scorer",
-          standardizedName: "First Goal Scorer",
-          marketGroup: "Player Markets",
-        },
-        selection: {
-          rawName: "John Doe",
-          standardizedName: "John Doe First Goal Scorer",
-          type: "player",
-        },
-        odds: 4.00,
-        timestamp: Date.now() - 180000, // 3 mins ago
-      },
-      // ... more combinations
-    ],
-    margin: 2.90,
-    impliedProbability: 97.10,
-  },
-  {
-    eventId: "evt_010",
-    market: "Last Goal Scorer",
-    combinations: [
-      {
-        id: "odds_020",
-        eventId: "evt_010",
-        bookmaker: "SportPesa",
-        market: {
-          rawName: "Last Goal Scorer",
-          standardizedName: "Last Goal Scorer",
-          marketGroup: "Player Markets",
-        },
-        selection: {
-          rawName: "Jane Smith",
-          standardizedName: "Jane Smith Last Goal Scorer",
-          type: "player",
-        },
-        odds: 5.50,
+        odds: 6.00,
         timestamp: Date.now() - 240000, // 4 mins ago
       },
-      // ... more combinations
-    ],
-    margin: 3.20,
-    impliedProbability: 96.80,
-  },
-  {
-    eventId: "evt_011",
-    market: "Clean Sheet",
-    combinations: [
       {
-        id: "odds_022",
-        eventId: "evt_011",
-        bookmaker: "Betway",
+        id: "odds_015",
+        eventId: "evt_006",
+        bookmaker: "22Bet",
         market: {
-          rawName: "Clean Sheet",
-          standardizedName: "Clean Sheet",
-          marketGroup: "Team Markets",
+          rawName: "Final Score",
+          standardizedName: "Correct Score",
+          marketGroup: "Score Markets",
         },
         selection: {
-          rawName: "Gor Mahia Clean Sheet",
-          standardizedName: "Gor Mahia Clean Sheet",
-          type: "boolean",
+          rawName: "0-1",
+          standardizedName: "0-1",
+          type: "score",
         },
-        odds: 2.75,
-        timestamp: Date.now() - 300000, // 5 mins ago
+        odds: 9.00,
+        timestamp: Date.now() - 60000, // 1 min ago
       },
-      // ... more combinations
     ],
-    margin: 2.80,
-    impliedProbability: 97.20,
+    margin: 4.01,
+    impliedProbability: 95.99,
   },
-  {
-    eventId: "evt_012",
-    market: "Half Time/Full Time",
-    combinations: [
-      {
-        id: "odds_024",
-        eventId: "evt_012",
-        bookmaker: "Melbet",
-        market: {
-          rawName: "Half Time/Full Time",
-          standardizedName: "Half Time/Full Time",
-          marketGroup: "Half Markets",
-        },
-        selection: {
-          rawName: "Gor Mahia/Gor Mahia",
-          standardizedName: "Gor Mahia Half Time/Full Time",
-          type: "halfTimeFullTime",
-        },
-        odds: 3.50,
-        timestamp: Date.now() - 120000, // 2 mins ago
-      },
-      // ... more combinations
-    ],
-    margin: 3.00,
-    impliedProbability: 97.00,
-  },
-    
-        
+  
 ];
-
+export { sampleOpportunities as testData };

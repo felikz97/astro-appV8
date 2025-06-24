@@ -16,6 +16,8 @@ import {
   Box,
   CssBaseline,
   Chip,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
@@ -41,6 +43,8 @@ export function DutchTable() {
     }
     return false;
   });
+
+   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   // Initialize dark mode based on localStorage or default to light mode
   
 
@@ -114,22 +118,30 @@ export function DutchTable() {
           >
             {/* Search Field */}
             <TextField
-              label="Search by Market"
+              label="Search by Event/Market"
               variant="outlined"
               size="small"
               value={search}
               onChange={e => setSearch(e.target.value)}
               fullWidth={isMobile}
               InputProps={{ style: { color: isDarkMode ? 'white' : 'black' } }}
-              InputLabelProps={{ style: { color: 'gray' } }}
+              InputLabelProps={{ style: { color: 'grey' } }}
               sx={{
+
                 flexGrow: 1,
-                '& .MuiOutlinedInput-root': {
-                  '& fieldset': { borderColor: 'gray' },
-                  '&:hover fieldset': { borderColor: isDarkMode ? 'white' : 'black' },
-                },
-              }}
-            />
+                maxWidth: 300,
+                minWidth: 200,
+               '& .MuiOutlinedInput-root': {
+               color: 'green',
+               '& fieldset': { borderColor: 'gray' },
+               '&:hover fieldset': { borderColor: 'green' },
+              },
+           '& .MuiInputLabel-root': {
+          color: 'gray',
+         },
+        }}
+      />
+
 
             {/* Refresh Button */}
             <IconButton
@@ -166,74 +178,72 @@ export function DutchTable() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredData.map(row => (
-                  <TableRow key={row.eventId}>
-                    <TableCell>
-                      {row.combinations.length === 2
-                        ? `${row.combinations[0].selection.standardizedName} vs ${row.combinations[1].selection.standardizedName}`
-                        : row.combinations[0].selection.standardizedName}
-                    </TableCell>
-                    <TableCell>{dayjs(row.combinations[0].timestamp).format('HH:mm')}</TableCell>
-                    <TableCell>
-                      <Chip label={row.combinations[0]?.bookmaker} color="primary" />
-                    </TableCell>
-                    <TableCell>{row.combinations[0]?.odds}</TableCell>
-                    <TableCell>{row.combinations[0]?.selection.rawName}</TableCell>
-                    <TableCell>
-                      {row.combinations[1] && (
-                        <Chip label={row.combinations[1].bookmaker} color="secondary" />
-                      )}
-                    </TableCell>
-                    <TableCell>{row.combinations[1]?.odds || '-'}</TableCell>
-                    <TableCell>{row.combinations[1]?.selection.rawName || '-'}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label="PROFIT"
-                        sx={{ backgroundColor: '#00c853', color: 'white', fontWeight: 'bold' }}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
+  {filteredData.map((row) => {
+    const isExpanded = expandedRow === row.eventId;
+
+    return (
+      <React.Fragment key={row.eventId}>
+        <TableRow
+          onClick={() => setExpandedRow(isExpanded ? null : row.eventId)}
+          hover
+          sx={{ cursor: 'pointer' }}
+        >
+          <TableCell>
+            {row.combinations.length === 2
+              ? `${row.combinations[0]?.selection.standardizedName} vs ${row.combinations[1]?.selection.standardizedName}`
+              : row.combinations[0]?.selection.standardizedName}
+          </TableCell>
+          <TableCell>{dayjs(row.combinations[0].timestamp).format('HH:mm')}</TableCell>
+          <TableCell>
+            <Chip label={row.combinations[0]?.bookmaker} color="primary" />
+          </TableCell>
+          <TableCell>{row.combinations[0]?.odds}</TableCell>
+          <TableCell>{row.combinations[0]?.selection.rawName}</TableCell>
+          <TableCell>
+            {row.combinations[1] && (
+              <Chip label={row.combinations[1]?.bookmaker} color="secondary" />
+            )}
+          </TableCell>
+          <TableCell>{row.combinations[1]?.odds || '-'}</TableCell>
+          <TableCell>{row.combinations[1]?.selection.rawName || '-'}</TableCell>
+          <TableCell>
+            <Chip
+              label="PROFIT"
+              sx={{ backgroundColor: '#00c853', color: 'white', fontWeight: 'bold' }}
+            />
+          </TableCell>
+        </TableRow>
+
+        {/* Expanded row with mock data */}
+        {isExpanded && (
+          <TableRow>
+            <TableCell colSpan={9} sx={{ backgroundColor: '#1b5e20', color: 'white' }}>
+              <Typography variant="body2" gutterBottom>
+                Stake 1: 500 KES | Return 1: 950 KES
+              </Typography>
+              <Typography variant="body2">
+                Stake 2: 400 KES | Return 2: 880 KES
+              </Typography>
+              <Typography variant="caption" color="lightgray">
+                Last Updated: {dayjs(row.combinations[0]?.timestamp).fromNow()}
+              </Typography>
+            </TableCell>
+          </TableRow>
+        )}
+      </React.Fragment>
+    );
+  })}
+</TableBody>
+
+            
             </Table>
           </TableContainer>
 
-          {/* Stake and Return Summary Section */}
-          <Box
-            mt={3}
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            sx={{
-              backgroundColor: '#38a354', // dark green
-              borderRadius: '8px',
-              padding: '1.5rem',
-              color: 'white',
-              gap: 10,
-              flexWrap: 'wrap',
-            }}
-          >
-            {/* Stake + Return Block 1 */}
-            <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>STAKE</Typography>
-              <Typography variant="h6">1000</Typography>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>RETURN</Typography>
-              <Typography variant="h6" sx={{ color: '#00e676' }}>1569</Typography>
-            </Box>
-
-            {/* Stake + Return Block 2 */}
-            <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>STAKE</Typography>
-              <Typography variant="h6">1000</Typography>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>RETURN</Typography>
-              <Typography variant="h6" sx={{ color: '#00e676' }}>2510</Typography>
-            </Box>
-          </Box>
-
+          
 
           {filteredData.length === 0 && (
             <Typography variant="subtitle1" align="center" mt={2} color="gray">
-              No opportunities found
+              No markt or event found
             </Typography>
           )}
         </Box>
