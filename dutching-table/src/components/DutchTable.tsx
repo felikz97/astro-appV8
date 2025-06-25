@@ -12,20 +12,22 @@ import {
   CssBaseline,
   ThemeProvider,
   TableContainer,
-  Collapse,
-  Container,
 } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import MenuIcon from '@mui/icons-material/Menu';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from '@tanstack/react-table';
 import { darkTheme, lightTheme } from '../theme';
 import { testData } from '../data/testData';
 import type { DutchBetOpportunity } from '../types/DutchBetOpportunity';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-
 dayjs.extend(relativeTime);
 
 export function DutchTable() {
@@ -45,6 +47,11 @@ export function DutchTable() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('theme', newMode ? 'dark' : 'light');
     }
+  };
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const toggleDrawer = (open: boolean) => () => {
+    setDrawerOpen(open);
   };
 
   const data = useMemo(() =>
@@ -112,17 +119,20 @@ export function DutchTable() {
     columns,
     getCoreRowModel: getCoreRowModel()
   });
- const latestUpdate = Math.max(
-    ...data.map(op => op.combinations[0]?.timestamp || 0)
-  );
-
-  const relative = dayjs(latestUpdate).fromNow();
 
   return (
     <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
       <CssBaseline />
+      <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
+        <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
+          <List>
+            <ListItem button><ListItemText primary="Dashboard" /></ListItem>
+            <ListItem button><ListItemText primary="Settings" /></ListItem>
+            <ListItem button><ListItemText primary="Log Out" /></ListItem>
+          </List>
+        </Box>
+      </Drawer>
       <Box sx={{ minHeight: '100vh' }}>
-        {/* Header */}
         <AppBar position="static" color="default" elevation={1}>
           <Toolbar sx={{ justifyContent: 'space-between' }}>
             <Box display="flex" alignItems="center" gap={1}>
@@ -141,10 +151,21 @@ export function DutchTable() {
         </AppBar>
         <Box p={isMobile ? 1 : 3}>
           <Typography variant="body2" color="gray" mb={2}>
-            Last Updated: {relative}
+            Last Updated: {lastUpdated}
           </Typography>
-          {/* Page Header */}
-          <Box textAlign="center" mb={2}>
+          <Box display="flex" justifyContent="center" alignItems="center" mb={2} position="relative">
+            {/* MenuIcon on the left */}
+            <IconButton
+              onClick={toggleDrawer(true)}
+              sx={{
+                position: 'absolute',
+                left: 0,
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
+
+            {/* Centered Title */}
             <Typography
               variant="h5"
               sx={{
@@ -155,16 +176,7 @@ export function DutchTable() {
               DUTCH BETS
             </Typography>
           </Box>
-          {/* Search Bar */}
-          <Box
-            display="flex"
-            flexDirection={isMobile ? 'column' : 'row'}
-            alignItems="center"
-            justifyContent="space-between"
-            gap={2}
-            mb={2}
-          >
-            {/* Search Field */}
+          <Box display="flex" flexDirection={isMobile ? 'column' : 'row'} alignItems="center" justifyContent="space-between" gap={2} mb={2}>
             <TextField
               label="Search by Event/Market"
               variant="outlined"
@@ -186,22 +198,18 @@ export function DutchTable() {
                 '& .MuiInputLabel-root': { color: 'gray' },
               }}
             />
-            {/* Refresh Button */}
             <IconButton
               onClick={() => window.location.reload()}
               sx={{
                 backgroundColor: '#2e7d32',
                 color: 'white',
-                '&:hover': {
-                  backgroundColor: '#1b5e20',
-                },
+                '&:hover': { backgroundColor: '#1b5e20' },
                 width: 100,
                 height: 40,
                 borderRadius: '5px',
-                textSizeAdjust: 'auto',
               }}
             >
-              Refresh
+              <RefreshIcon />
             </IconButton>
           </Box>
           <TableContainer component={Paper}>
@@ -210,7 +218,7 @@ export function DutchTable() {
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id} style={{ backgroundColor: '#ccc' }}>
                     {headerGroup.headers.map((header) => (
-                      <th key={header.id} style={{ padding: '8px', textAlign: 'left' }}>
+                      <th key={header.id} style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>
                         {flexRender(header.column.columnDef.header, header.getContext())}
                       </th>
                     ))}
@@ -222,7 +230,7 @@ export function DutchTable() {
                   <React.Fragment key={row.id}>
                     <tr onClick={() => setExpanded(row.original.eventId === expanded ? null : row.original.eventId)} style={{ cursor: 'pointer' }}>
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} style={{ padding: '8px' }}>
+                        <td key={cell.id} style={{ padding: '8px', border: '1px solid #e5e4e2 ' }}>
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </td>
                       ))}

@@ -3,12 +3,22 @@ import { TableRow, TableCell, Chip } from '@mui/material';
 import dayjs from 'dayjs';
 import { getMatchLabel } from '../utils/getMatchLabel';
 import type { DutchBetOpportunity } from '../types/DutchBetOpportunity';
-
+import MenuIcon from '@mui/icons-material/Menu';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 interface Props {
     row: DutchBetOpportunity;
     isExpanded: boolean;
     onToggleExpand: () => void;
 }
+
+const [drawerOpen, setDrawerOpen] = useState(false);
+
+const toggleDrawer = (open: boolean) => () => {
+    setDrawerOpen(open);
+};
 
 export const DutchTableRow: React.FC<Props> = ({ row, isExpanded, onToggleExpand }) => {
     const [a, b] = row.combinations;
