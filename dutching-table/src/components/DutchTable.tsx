@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+{/* eslint-disable @typescript-eslint/no-unused-vars */}
 import {
   AppBar,
   Toolbar,
@@ -32,11 +33,13 @@ import type { DutchBetOpportunity } from '../types/DutchBetOpportunity';
 
 dayjs.extend(relativeTime);
 
+{/* eslint-disable @typescript-eslint/no-unused-vars */}
+// Main component for the Dutch Table
 export function DutchTable() {
   const isMobile = useMediaQuery('(max-width:768px)');
   const [data] = useState<DutchBetOpportunity[]>(testData);
   const [search, setSearch] = useState('');
-  const [userEmail] = useState('john@example.com');
+  // const [userEmail] = useState('john@example.com');  
   const [isDarkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') === 'dark';
@@ -44,7 +47,7 @@ export function DutchTable() {
     return false;
   });
 
-   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
   // Initialize dark mode based on localStorage or default to light mode
   
 
@@ -66,6 +69,20 @@ export function DutchTable() {
 
   const relative = dayjs(latestUpdate).fromNow();
 
+  {/* eslint-disable @typescript-eslint/no-unused-vars */}
+  // Render the main table with search, theme toggle, and data display
+  {/* eslint-disable @typescript-eslint/no-unused-vars */}
+  if (!data || data.length === 0) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <Typography variant="h6" color="gray">
+          No data available
+        </Typography>
+      </Box>
+    );
+  }
+
+  
   return (
     <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
       <CssBaseline />
@@ -88,14 +105,13 @@ export function DutchTable() {
             </Box>
           </Toolbar>
         </AppBar>
-
         <Box p={isMobile ? 1 : 3}>
           <Typography variant="body2" color="gray" mb={2}>
             Last Updated: {relative}
           </Typography>
           {/* Page Header */}
           <Box textAlign="center" mb={2}>
-             <Typography
+            <Typography
               variant="h5"
               sx={{
                 fontWeight: 'bold',
@@ -104,9 +120,7 @@ export function DutchTable() {
             >
               DUTCH BETS
             </Typography>
-        
           </Box>
-
           {/* Search Bar */}
           <Box
             display="flex"
@@ -127,22 +141,18 @@ export function DutchTable() {
               InputProps={{ style: { color: isDarkMode ? 'white' : 'black' } }}
               InputLabelProps={{ style: { color: 'grey' } }}
               sx={{
-
                 flexGrow: 1,
                 maxWidth: 300,
                 minWidth: 200,
-               '& .MuiOutlinedInput-root': {
-               color: 'green',
-               '& fieldset': { borderColor: 'gray' },
-               '&:hover fieldset': { borderColor: 'green' },
-              },
-           '& .MuiInputLabel-root': {
-          color: 'gray',
-         },
-        }}
-      />
-
-
+                '& .MuiOutlinedInput-root': {
+                  color: 'green',
+                  '& fieldset': { borderColor: 'gray' },
+                  '&:hover fieldset': { borderColor: 'green' },
+                },
+                '& .MuiInputLabel-root': {color: 'gray',
+                },
+              }}
+              />
             {/* Refresh Button */}
             <IconButton
               onClick={() => window.location.reload()}
@@ -160,11 +170,10 @@ export function DutchTable() {
             >
               Refresh
             </IconButton>
-          </Box>
-
+          </Box> {/* Table Container */}
           <TableContainer component={Paper}>
             <Table size={isMobile ? 'small' : 'medium'}>
-              <TableHead bgcolor="#8d8d8d" >
+              <TableHead sx={{ backgroundColor: "#8d8d8d"}} >
                 <TableRow>
                   <TableCell><b>EVENT</b></TableCell>
                   <TableCell><b>TIME</b></TableCell>
@@ -178,69 +187,114 @@ export function DutchTable() {
                 </TableRow>
               </TableHead>
               <TableBody>
-  {filteredData.map((row) => {
-    const isExpanded = expandedRow === row.eventId;
+                {filteredData.map((row) => {
+                  const isExpanded = expandedRow === row.eventId;
+                  return (
+                    <React.Fragment key={row.eventId}>
+                      <TableRow
+                        onClick={() => setExpandedRow(isExpanded ? null : row.eventId)}
+                        hover
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        <TableCell>
+                          {
+                            (() => {
+                              const teams = row.combinations
+                                .filter(c => c.selection.type === 'team')
+                                .map(c => c.selection.standardizedName);
 
-    return (
-      <React.Fragment key={row.eventId}>
-        <TableRow
-          onClick={() => setExpandedRow(isExpanded ? null : row.eventId)}
-          hover
-          sx={{ cursor: 'pointer' }}
-        >
-          <TableCell>
-            {row.combinations.length === 2
-              ? `${row.combinations[0]?.selection.standardizedName} vs ${row.combinations[1]?.selection.standardizedName}`
-              : row.combinations[0]?.selection.standardizedName}
-          </TableCell>
-          <TableCell>{dayjs(row.combinations[0].timestamp).format('HH:mm')}</TableCell>
-          <TableCell>
-            <Chip label={row.combinations[0]?.bookmaker} color="primary" />
-          </TableCell>
-          <TableCell>{row.combinations[0]?.odds}</TableCell>
-          <TableCell>{row.combinations[0]?.selection.rawName}</TableCell>
-          <TableCell>
-            {row.combinations[1] && (
-              <Chip label={row.combinations[1]?.bookmaker} color="secondary" />
-            )}
-          </TableCell>
-          <TableCell>{row.combinations[1]?.odds || '-'}</TableCell>
-          <TableCell>{row.combinations[1]?.selection.rawName || '-'}</TableCell>
-          <TableCell>
-            <Chip
-              label="PROFIT"
-              sx={{ backgroundColor: '#00c853', color: 'white', fontWeight: 'bold' }}
-            />
-          </TableCell>
-        </TableRow>
+                              if (teams.length >= 2) {
+                                return `${teams[0]} vs ${teams[1]}`;
+                              }
 
-        {/* Expanded row with mock data */}
-        {isExpanded && (
-          <TableRow>
-            <TableCell colSpan={9} sx={{ backgroundColor: '#1b5e20', color: 'white' }}>
-              <Typography variant="body2" gutterBottom>
-                Stake 1: 500 KES | Return 1: 950 KES
-              </Typography>
-              <Typography variant="body2">
-                Stake 2: 400 KES | Return 2: 880 KES
-              </Typography>
-              <Typography variant="caption" color="lightgray">
-                Last Updated: {dayjs(row.combinations[0]?.timestamp).fromNow()}
-              </Typography>
-            </TableCell>
-          </TableRow>
-        )}
-      </React.Fragment>
-    );
-  })}
-</TableBody>
+                              const fallbackSelections = row.combinations
+                                .slice(0, 2)
+                                .map(c => c.selection.standardizedName);
 
-            
+                              return fallbackSelections.length === 2
+                                ? `${fallbackSelections[0]} vs ${fallbackSelections[1]}`
+                                : fallbackSelections[0] || '—';
+                            })()
+                          }
+                        </TableCell>
+
+                        <TableCell>{dayjs(row.combinations[0].timestamp).format('HH:mm')}</TableCell>
+                        <TableCell>
+                          <Chip label={row.combinations[0]?.bookmaker} color="primary" />
+                        </TableCell>
+                        <TableCell>{row.combinations[0]?.odds}</TableCell>
+                        <TableCell>{row.combinations[0]?.selection.rawName}</TableCell>
+                        <TableCell>
+                          {row.combinations[1] && (
+                            <Chip label={row.combinations[1]?.bookmaker} color="secondary" />
+                          )}
+                        </TableCell>
+                        <TableCell>{row.combinations[1]?.odds || '-'}</TableCell>
+                        <TableCell>{row.combinations[1]?.selection.rawName || '-'}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label="PROFIT"
+                            sx={{ backgroundColor: '#00c853', color: 'white', fontWeight: 'bold' }}
+                          />
+                        </TableCell>
+                      </TableRow>
+
+                      {/* Expanded row with mock data */}
+                      {isExpanded && (() => {
+                        const totalStake = 2000;
+                        const odds1 = row.combinations[0]?.odds ?? 1;
+                        const odds2 = row.combinations[1]?.odds ?? 1;
+                        const inverseSum = 1 / odds1 + 1 / odds2;
+
+                        const stake1 = totalStake / inverseSum / odds1;
+                        const stake2 = totalStake / inverseSum / odds2;
+
+                        const roundedStake1 = Math.round(stake1);
+                        const roundedStake2 = Math.round(stake2);
+                        const return1 = Math.round(roundedStake1 * odds1);
+                        const return2 = Math.round(roundedStake2 * odds2);
+
+                        {/* this returns expandable rows*/}
+                        return (
+                          <TableRow>
+                            <TableCell colSpan={9} sx={{ backgroundColor: '#2e7d32', padding: 2 }}>
+                              <Box
+                                display="flex"
+                                justifyContent="space-evenly"
+                                alignItems="center"
+                                flexWrap="wrap"
+                                sx={{ color: 'white' }}
+                              >
+                                {/* BOOKIE 1 */}
+                                <Box textAlign="center" flex={1} minWidth={120}>
+                                  <Typography variant="subtitle2">STAKE</Typography>
+                                  <Typography variant="h6">{roundedStake1}</Typography>
+                                  <Typography variant="subtitle2">RETURN</Typography>
+                                  <Typography variant="h6" sx={{ color: '#69f0ae' }}>{return1}</Typography>
+                                </Box>
+
+                                {/* BOOKIE 2 */}
+                                <Box textAlign="center" flex={1} minWidth={120}>
+                                  <Typography variant="subtitle2">STAKE</Typography>
+                                  <Typography variant="h6">{roundedStake2}</Typography>
+                                  <Typography variant="subtitle2">RETURN</Typography>
+                                  <Typography variant="h6" sx={{ color: '#69f0ae' }}>{return2}</Typography>
+                                </Box>
+                              </Box>
+
+                              <Typography variant="caption" color="lightgray" textAlign="center" mt={1} display="block">
+                                Last Updated: {dayjs(row.combinations[0]?.timestamp).fromNow()}
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })()}
+                    </React.Fragment>
+                  );
+                })}
+              </TableBody>
             </Table>
           </TableContainer>
-
-          
-
           {filteredData.length === 0 && (
             <Typography variant="subtitle1" align="center" mt={2} color="gray">
               No markt or event found
@@ -248,7 +302,6 @@ export function DutchTable() {
           )}
         </Box>
       </Box>
-      
     </ThemeProvider>
   );
 }

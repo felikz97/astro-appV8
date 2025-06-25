@@ -63,6 +63,7 @@ const sampleOpportunities: DutchBetOpportunity[] = [
         odds: 3.25,
         timestamp: Date.now() - 180000, // 3 mins ago
       },
+      
       {
         id: "odds_003",
         eventId: "evt_001",
@@ -84,6 +85,8 @@ const sampleOpportunities: DutchBetOpportunity[] = [
     margin: 2.45,
     impliedProbability: 97.55,
   },
+
+  
   {
     eventId: "evt_002",
     market: "Total Goals",
@@ -328,6 +331,8 @@ const sampleOpportunities: DutchBetOpportunity[] = [
     margin: 4.01,
     impliedProbability: 95.99,
   },
+
   
 ];
+
 export { sampleOpportunities as testData };
