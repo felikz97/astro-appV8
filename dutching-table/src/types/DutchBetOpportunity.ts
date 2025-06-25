@@ -1,4 +1,4 @@
-// src/types/DutchBetOpportunity.ts
+// File: src/types/DutchBetOpportunity.ts
 
 export interface OddsNode {
   id: string;
@@ -24,4 +24,7 @@ export interface DutchBetOpportunity {
   combinations: OddsNode[];
   margin: number;
   impliedProbability: number;
+}
+export interface DutchBetOpportunityWithId extends DutchBetOpportunity {
+  id: string;
 }

@@ -1,45 +1,37 @@
-import React, { useState } from 'react';
-{/* eslint-disable @typescript-eslint/no-unused-vars */}
+import React, { useMemo, useState } from 'react';
 import {
   AppBar,
   Toolbar,
   IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Typography,
-  TextField,
-  useMediaQuery,
   Box,
-  CssBaseline,
   Chip,
-  Tabs,
-  Tab,
+  TextField,
+  Paper,
+  useMediaQuery,
+  CssBaseline,
+  ThemeProvider,
+  TableContainer,
+  Collapse,
+  Container,
 } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
-import { ThemeProvider } from '@mui/material/styles';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from '@tanstack/react-table';
+import { darkTheme, lightTheme } from '../theme';
+import { testData } from '../data/testData';
+import type { DutchBetOpportunity } from '../types/DutchBetOpportunity';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
-import { lightTheme, darkTheme } from '../theme';
-import { testData } from '../data/testData';
-import type { DutchBetOpportunity } from '../types/DutchBetOpportunity';
-
 dayjs.extend(relativeTime);
 
-{/* eslint-disable @typescript-eslint/no-unused-vars */}
-// Main component for the Dutch Table
 export function DutchTable() {
   const isMobile = useMediaQuery('(max-width:768px)');
-  const [data] = useState<DutchBetOpportunity[]>(testData);
   const [search, setSearch] = useState('');
-  // const [userEmail] = useState('john@example.com');  
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [isDarkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') === 'dark';
@@ -47,46 +39,88 @@ export function DutchTable() {
     return false;
   });
 
-  const [expandedRow, setExpandedRow] = useState<string | null>(null);
-  // Initialize dark mode based on localStorage or default to light mode
-  
-
   const toggleTheme = () => {
-    setDarkMode(prev => {
-      const newMode = !prev;
+    const newMode = !isDarkMode;
+    setDarkMode(newMode);
+    if (typeof window !== 'undefined') {
       localStorage.setItem('theme', newMode ? 'dark' : 'light');
-      return newMode;
-    });
+    }
   };
 
-  const filteredData = data.filter(opportunity =>
-    opportunity.market.toLowerCase().includes(search.toLowerCase())
+  const data = useMemo(() =>
+    testData.filter((op) =>
+      op.market.toLowerCase().includes(search.toLowerCase()) ||
+      op.combinations.some((c) => c.selection.standardizedName.toLowerCase().includes(search.toLowerCase()))
+    ), [search]
   );
 
-  const latestUpdate = Math.max(
+  const lastUpdated = useMemo(() => {
+    const timestamps = testData.flatMap((row) => row.combinations.map((c) => c.timestamp));
+    const latest = Math.max(...timestamps);
+    return dayjs(latest).fromNow();
+  }, []);
+
+  const columnHelper = createColumnHelper<DutchBetOpportunity>();
+  const columns = [
+    columnHelper.accessor((row) => {
+      const teams = row.combinations.filter(c => c.selection.type === 'team').map(c => c.selection.standardizedName);
+      return teams.length >= 2 ? `${teams[0]} vs ${teams[1]}` : row.market;
+    }, {
+      id: 'event',
+      header: 'EVENT',
+      cell: (info) => info.getValue()
+    }),
+    columnHelper.accessor((row) => dayjs(row.combinations[0].timestamp).format('HH:mm'), {
+      id: 'time',
+      header: 'TIME'
+    }),
+    columnHelper.accessor(row => row.combinations[0].bookmaker, {
+      id: 'bookie1',
+      header: 'BOOKIE 1',
+      cell: (info) => <Chip label={info.getValue()} sx={{ backgroundColor: 'green', color: 'white' }} />
+    }),
+    columnHelper.accessor(row => row.combinations[0].odds, {
+      id: 'odds1',
+      header: 'ODDS 1'
+    }),
+    columnHelper.accessor(row => row.combinations[0].selection.rawName, {
+      id: 'sel1',
+      header: 'MARKET SELECTION'
+    }),
+    columnHelper.accessor(row => row.combinations[1]?.bookmaker || '-', {
+      id: 'bookie2',
+      header: 'BOOKIE 2',
+      cell: (info) => info.getValue() !== '-' ? <Chip label={info.getValue()} sx={{ backgroundColor: 'purple', color: 'white' }} /> : '-'
+    }),
+    columnHelper.accessor(row => row.combinations[1]?.odds || '-', {
+      id: 'odds2',
+      header: 'ODDS 2'
+    }),
+    columnHelper.accessor(row => row.combinations[1]?.selection.rawName || '-', {
+      id: 'sel2',
+      header: 'MARKET SELECTION 2'
+    }),
+    columnHelper.accessor(() => 'PROFIT', {
+      id: 'profit',
+      header: 'PL',
+      cell: () => <Chip label="PROFIT" color="success" />
+    })
+  ];
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel()
+  });
+ const latestUpdate = Math.max(
     ...data.map(op => op.combinations[0]?.timestamp || 0)
   );
 
   const relative = dayjs(latestUpdate).fromNow();
 
-  {/* eslint-disable @typescript-eslint/no-unused-vars */}
-  // Render the main table with search, theme toggle, and data display
-  {/* eslint-disable @typescript-eslint/no-unused-vars */}
-  if (!data || data.length === 0) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <Typography variant="h6" color="gray">
-          No data available
-        </Typography>
-      </Box>
-    );
-  }
-
-  
   return (
     <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
       <CssBaseline />
-
       <Box sx={{ minHeight: '100vh' }}>
         {/* Header */}
         <AppBar position="static" color="default" elevation={1}>
@@ -149,10 +183,9 @@ export function DutchTable() {
                   '& fieldset': { borderColor: 'gray' },
                   '&:hover fieldset': { borderColor: 'green' },
                 },
-                '& .MuiInputLabel-root': {color: 'gray',
-                },
+                '& .MuiInputLabel-root': { color: 'gray' },
               }}
-              />
+            />
             {/* Refresh Button */}
             <IconButton
               onClick={() => window.location.reload()}
@@ -170,136 +203,60 @@ export function DutchTable() {
             >
               Refresh
             </IconButton>
-          </Box> {/* Table Container */}
+          </Box>
           <TableContainer component={Paper}>
-            <Table size={isMobile ? 'small' : 'medium'}>
-              <TableHead sx={{ backgroundColor: "#8d8d8d"}} >
-                <TableRow>
-                  <TableCell><b>EVENT</b></TableCell>
-                  <TableCell><b>TIME</b></TableCell>
-                  <TableCell><b>BOOKIE 1</b></TableCell>
-                  <TableCell><b>ODDS 1</b></TableCell>
-                  <TableCell><b>MARKET SELECTION</b></TableCell>
-                  <TableCell><b>BOOKIE 2</b></TableCell>
-                  <TableCell><b>ODDS 2</b></TableCell>
-                  <TableCell><b>MARKET SELECTION 2</b></TableCell>
-                  <TableCell><b>PL</b></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredData.map((row) => {
-                  const isExpanded = expandedRow === row.eventId;
-                  return (
-                    <React.Fragment key={row.eventId}>
-                      <TableRow
-                        onClick={() => setExpandedRow(isExpanded ? null : row.eventId)}
-                        hover
-                        sx={{ cursor: 'pointer' }}
-                      >
-                        <TableCell>
-                          {
-                            (() => {
-                              const teams = row.combinations
-                                .filter(c => c.selection.type === 'team')
-                                .map(c => c.selection.standardizedName);
-
-                              if (teams.length >= 2) {
-                                return `${teams[0]} vs ${teams[1]}`;
-                              }
-
-                              const fallbackSelections = row.combinations
-                                .slice(0, 2)
-                                .map(c => c.selection.standardizedName);
-
-                              return fallbackSelections.length === 2
-                                ? `${fallbackSelections[0]} vs ${fallbackSelections[1]}`
-                                : fallbackSelections[0] || '—';
-                            })()
-                          }
-                        </TableCell>
-
-                        <TableCell>{dayjs(row.combinations[0].timestamp).format('HH:mm')}</TableCell>
-                        <TableCell>
-                          <Chip label={row.combinations[0]?.bookmaker} color="primary" />
-                        </TableCell>
-                        <TableCell>{row.combinations[0]?.odds}</TableCell>
-                        <TableCell>{row.combinations[0]?.selection.rawName}</TableCell>
-                        <TableCell>
-                          {row.combinations[1] && (
-                            <Chip label={row.combinations[1]?.bookmaker} color="secondary" />
-                          )}
-                        </TableCell>
-                        <TableCell>{row.combinations[1]?.odds || '-'}</TableCell>
-                        <TableCell>{row.combinations[1]?.selection.rawName || '-'}</TableCell>
-                        <TableCell>
-                          <Chip
-                            label="PROFIT"
-                            sx={{ backgroundColor: '#00c853', color: 'white', fontWeight: 'bold' }}
-                          />
-                        </TableCell>
-                      </TableRow>
-
-                      {/* Expanded row with mock data */}
-                      {isExpanded && (() => {
-                        const totalStake = 2000;
-                        const odds1 = row.combinations[0]?.odds ?? 1;
-                        const odds2 = row.combinations[1]?.odds ?? 1;
-                        const inverseSum = 1 / odds1 + 1 / odds2;
-
-                        const stake1 = totalStake / inverseSum / odds1;
-                        const stake2 = totalStake / inverseSum / odds2;
-
-                        const roundedStake1 = Math.round(stake1);
-                        const roundedStake2 = Math.round(stake2);
-                        const return1 = Math.round(roundedStake1 * odds1);
-                        const return2 = Math.round(roundedStake2 * odds2);
-
-                        {/* this returns expandable rows*/}
-                        return (
-                          <TableRow>
-                            <TableCell colSpan={9} sx={{ backgroundColor: '#2e7d32', padding: 2 }}>
-                              <Box
-                                display="flex"
-                                justifyContent="space-evenly"
-                                alignItems="center"
-                                flexWrap="wrap"
-                                sx={{ color: 'white' }}
-                              >
-                                {/* BOOKIE 1 */}
-                                <Box textAlign="center" flex={1} minWidth={120}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id} style={{ backgroundColor: '#ccc' }}>
+                    {headerGroup.headers.map((header) => (
+                      <th key={header.id} style={{ padding: '8px', textAlign: 'left' }}>
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.map((row) => (
+                  <React.Fragment key={row.id}>
+                    <tr onClick={() => setExpanded(row.original.eventId === expanded ? null : row.original.eventId)} style={{ cursor: 'pointer' }}>
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} style={{ padding: '8px' }}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                    {expanded === row.original.eventId && (
+                      <tr>
+                        <td colSpan={9} style={{ backgroundColor: '#2e7d32', color: 'white', padding: '1rem' }}>
+                          <Box display="flex" justifyContent="space-around">
+                            {[0, 1].map(i => {
+                              const combo = row.original.combinations[i];
+                              if (!combo) return null;
+                              const stake = Math.round(2000 / (1 / combo.odds));
+                              const returns = Math.round(stake * combo.odds);
+                              return (
+                                <Box key={i} textAlign="center">
                                   <Typography variant="subtitle2">STAKE</Typography>
-                                  <Typography variant="h6">{roundedStake1}</Typography>
+                                  <Typography variant="h6">{stake}</Typography>
                                   <Typography variant="subtitle2">RETURN</Typography>
-                                  <Typography variant="h6" sx={{ color: '#69f0ae' }}>{return1}</Typography>
+                                  <Typography variant="h6" sx={{ color: '#69f0ae' }}>{returns}</Typography>
                                 </Box>
-
-                                {/* BOOKIE 2 */}
-                                <Box textAlign="center" flex={1} minWidth={120}>
-                                  <Typography variant="subtitle2">STAKE</Typography>
-                                  <Typography variant="h6">{roundedStake2}</Typography>
-                                  <Typography variant="subtitle2">RETURN</Typography>
-                                  <Typography variant="h6" sx={{ color: '#69f0ae' }}>{return2}</Typography>
-                                </Box>
-                              </Box>
-
-                              <Typography variant="caption" color="lightgray" textAlign="center" mt={1} display="block">
-                                Last Updated: {dayjs(row.combinations[0]?.timestamp).fromNow()}
-                              </Typography>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })()}
-                    </React.Fragment>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                              );
+                            })}
+                          </Box>
+                          <Typography variant="caption" color="lightgray" textAlign="center" mt={2} display="block">
+                            Last Updated: {dayjs(row.original.combinations[0]?.timestamp).fromNow()}
+                          </Typography>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
           </TableContainer>
-          {filteredData.length === 0 && (
-            <Typography variant="subtitle1" align="center" mt={2} color="gray">
-              No markt or event found
-            </Typography>
-          )}
         </Box>
       </Box>
     </ThemeProvider>
