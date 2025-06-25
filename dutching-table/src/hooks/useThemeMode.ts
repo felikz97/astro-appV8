@@ -19,5 +19,7 @@ export const useThemeMode = () => {
 
     return { isDarkMode, toggleTheme };
 };
+
+export default useThemeMode;
 // This hook manages the theme mode (light/dark) and persists the preference in localStorage.
 // It initializes the theme based on localStorage value and provides a function to toggle the theme.

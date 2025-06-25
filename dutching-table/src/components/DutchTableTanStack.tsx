@@ -16,7 +16,6 @@ import {
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import MenuIcon from '@mui/icons-material/Menu';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
@@ -36,7 +35,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
-export function DutchTable() {
+export function DutchTableTanStack() {
   const isMobile = useMediaQuery('(max-width:768px)');
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -139,7 +138,7 @@ export function DutchTable() {
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
         <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
           <List>
-            <ListItem button><ListItemText primary="Dashboard" /></ListItem>
+            <ListItem button><ListItemText primary="Dashboard" /> </ListItem>
             <ListItem button><ListItemText primary="Settings" /></ListItem>
             <ListItem button><ListItemText primary="Log Out" /></ListItem>
           </List>
@@ -196,15 +195,17 @@ export function DutchTable() {
                 '& .MuiInputLabel-root': { color: 'gray' },
               }}
             />
+
+            {/*} Refresh button*/}
             <IconButton
               onClick={() => window.location.reload()}
               sx={{ backgroundColor: '#2e7d32', color: 'white', '&:hover': { backgroundColor: '#1b5e20' }, width: 100, height: 40, borderRadius: '5px' }}
             >
-              
-              <Typography variant="button" sx={{ fontWeight: 'bold', color: 'white' }}> Refresh </Typography>
-              
+              <Typography variant="button" sx={{ fontWeight: 'bold' }}> Refresh </Typography>
             </IconButton>
           </Box>
+
+          {/*} table container*/}
           <TableContainer component={Paper}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
