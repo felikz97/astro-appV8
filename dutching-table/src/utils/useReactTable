@@ -1,0 +1,12 @@
+import { useReactTable, getCoreRowModel, getSortedRowModel, flexRender } from '@tanstack/react-table';
+
+const [sorting, setSorting] = useState([{ id: 'time', desc: false }]); // default: ascending
+
+const table = useReactTable({
+  data,
+  columns,
+  state: { sorting },
+  onSortingChange: setSorting,
+  getCoreRowModel: getCoreRowModel(),
+  getSortedRowModel: getSortedRowModel(), //  enable sorting
+});

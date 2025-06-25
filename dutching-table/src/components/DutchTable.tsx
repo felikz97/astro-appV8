@@ -22,7 +22,13 @@ import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from '@tanstack/react-table';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  flexRender,
+  createColumnHelper,
+} from '@tanstack/react-table';
 import { darkTheme, lightTheme } from '../theme';
 import { testData } from '../data/testData';
 import type { DutchBetOpportunity } from '../types/DutchBetOpportunity';
@@ -34,6 +40,8 @@ export function DutchTable() {
   const isMobile = useMediaQuery('(max-width:768px)');
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [sorting, setSorting] = useState([{ id: 'time', desc: false }]);
+
   const [isDarkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') === 'dark';
@@ -70,54 +78,59 @@ export function DutchTable() {
   const columnHelper = createColumnHelper<DutchBetOpportunity>();
   const columns = [
     columnHelper.accessor((row) => {
-      const teams = row.combinations.filter(c => c.selection.type === 'team').map(c => c.selection.standardizedName);
-      return teams.length >= 2 ? `${teams[0]} vs ${teams[1]}` : row.market;
+      const names = row.combinations.map(c => c.selection.standardizedName);
+      return names.length >= 2 ? `${names[0]} vs ${names[1]}` : row.market;
     }, {
       id: 'event',
       header: 'EVENT',
-      cell: (info) => info.getValue()
+      cell: (info) => info.getValue(),
     }),
-    columnHelper.accessor((row) => dayjs(row.combinations[0].timestamp).format('HH:mm'), {
+    columnHelper.accessor((row) => row.combinations[0].timestamp, {
       id: 'time',
-      header: 'TIME'
+      header: 'TIME',
+      cell: (info) => dayjs(info.getValue()).format('HH:mm'),
+      sortingFn: (a, b) => a.original.combinations[0].timestamp - b.original.combinations[0].timestamp,
     }),
     columnHelper.accessor(row => row.combinations[0].bookmaker, {
       id: 'bookie1',
       header: 'BOOKIE 1',
-      cell: (info) => <Chip label={info.getValue()} sx={{ backgroundColor: 'green', color: 'white' }} />
+      cell: (info) => <Chip label={info.getValue()} sx={{ backgroundColor: 'green', color: 'white' }} />,
     }),
     columnHelper.accessor(row => row.combinations[0].odds, {
       id: 'odds1',
-      header: 'ODDS 1'
+      header: 'ODDS 1',
     }),
     columnHelper.accessor(row => row.combinations[0].selection.rawName, {
       id: 'sel1',
-      header: 'MARKET SELECTION'
+      header: 'MARKET SELECTION',
     }),
     columnHelper.accessor(row => row.combinations[1]?.bookmaker || '-', {
       id: 'bookie2',
       header: 'BOOKIE 2',
-      cell: (info) => info.getValue() !== '-' ? <Chip label={info.getValue()} sx={{ backgroundColor: 'purple', color: 'white' }} /> : '-'
+      cell: (info) => info.getValue() !== '-' ? <Chip label={info.getValue()} sx={{ backgroundColor: 'purple', color: 'white' }} /> : '-',
     }),
     columnHelper.accessor(row => row.combinations[1]?.odds || '-', {
       id: 'odds2',
-      header: 'ODDS 2'
+      header: 'ODDS 2',
     }),
     columnHelper.accessor(row => row.combinations[1]?.selection.rawName || '-', {
       id: 'sel2',
-      header: 'MARKET SELECTION 2'
+      header: 'MARKET SELECTION 2',
     }),
     columnHelper.accessor(() => 'PROFIT', {
       id: 'profit',
       header: 'PL',
-      cell: () => <Chip label="PROFIT" color="success" />
-    })
+      cell: () => <Chip label="PROFIT" color="success" />,
+    }),
   ];
 
   const table = useReactTable({
     data,
     columns,
-    getCoreRowModel: getCoreRowModel()
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   });
 
   return (
@@ -154,25 +167,10 @@ export function DutchTable() {
             Last Updated: {lastUpdated}
           </Typography>
           <Box display="flex" justifyContent="center" alignItems="center" mb={2} position="relative">
-            {/* MenuIcon on the left */}
-            <IconButton
-              onClick={toggleDrawer(true)}
-              sx={{
-                position: 'absolute',
-                left: 0,
-              }}
-            >
+            <IconButton onClick={toggleDrawer(true)} sx={{ position: 'absolute', left: 0 }}>
               <MenuIcon />
             </IconButton>
-
-            {/* Centered Title */}
-            <Typography
-              variant="h5"
-              sx={{
-                fontWeight: 'bold',
-                color: isDarkMode ? 'white' : 'black',
-              }}
-            >
+            <Typography variant="h5" sx={{ fontWeight: 'bold', color: isDarkMode ? 'white' : 'black' }}>
               DUTCH BETS
             </Typography>
           </Box>
@@ -200,16 +198,11 @@ export function DutchTable() {
             />
             <IconButton
               onClick={() => window.location.reload()}
-              sx={{
-                backgroundColor: '#2e7d32',
-                color: 'white',
-                '&:hover': { backgroundColor: '#1b5e20' },
-                width: 100,
-                height: 40,
-                borderRadius: '5px',
-              }}
+              sx={{ backgroundColor: '#2e7d32', color: 'white', '&:hover': { backgroundColor: '#1b5e20' }, width: 100, height: 40, borderRadius: '5px' }}
             >
-              <RefreshIcon />
+              
+              <Typography variant="button" sx={{ fontWeight: 'bold', color: 'white' }}> Refresh </Typography>
+              
             </IconButton>
           </Box>
           <TableContainer component={Paper}>
